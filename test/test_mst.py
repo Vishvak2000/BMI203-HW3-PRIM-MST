@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from mst import Graph
+from mst.graph import Graph
 from sklearn.metrics import pairwise_distances
 
 
@@ -20,10 +20,6 @@ def check_mst(adj_mat: np.ndarray,
         expected_weight: weight of the minimum spanning tree of the full graph
         allowed_error: allowed difference between proposed MST weight and `expected_weight`
 
-    TODO: Add additional assertions to ensure the correctness of your MST implementation. For
-    example, how many edges should a minimum spanning tree have? Are minimum spanning trees
-    always connected? What else can you think of?
-
     """
 
     def approx_equal(a, b):
@@ -34,6 +30,12 @@ def check_mst(adj_mat: np.ndarray,
         for j in range(i+1):
             total += mst[i, j]
     assert approx_equal(total, expected_weight), 'Proposed MST has incorrect expected weight'
+
+    # check that number of edges in MST is correct
+    num_edges = np.count_nonzero(mst) / 2
+    num_vertices = mst.shape[0]
+    assert num_edges == num_vertices - 1, 'Proposed MST has incorrect number of edges'
+    # this guarantees that the MST is connected, a tree and by extension is acyclic
 
 
 def test_mst_small():
@@ -68,7 +70,15 @@ def test_mst_single_cell_data():
 def test_mst_student():
     """
     
-    TODO: Write at least one unit test for MST construction.
+    Tests if graph is empty or non-symmetric
     
     """
-    pass
+    empty_graph = Graph("./data/empty.csv")
+    with pytest.raises(ValueError):
+        empty_graph.construct_mst()
+
+    non_symmetric_graph = Graph("./data/non_symmetric.csv")
+    print(non_symmetric_graph.adj_mat)
+    with pytest.raises(ValueError):
+        non_symmetric_graph.construct_mst()
+    

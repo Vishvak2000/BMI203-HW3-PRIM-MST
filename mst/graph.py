@@ -19,6 +19,8 @@ class Graph:
             self.adj_mat = adjacency_mat
         else: 
             raise TypeError('Input must be a valid path or an adjacency matrix')
+        
+        
         self.mst = None
 
     def _load_adjacency_matrix_from_csv(self, path: str) -> np.ndarray:
@@ -41,4 +43,42 @@ class Graph:
         `heapify`, `heappop`, and `heappush` functions.
 
         """
-        self.mst = None
+
+        if self.adj_mat.size == 0:
+            raise ValueError('Adjacency matrix is empty, must have some vertices and edges')
+                             
+        if self.adj_mat is None:
+            raise ValueError('Adjacency matrix is not initialized')
+
+
+        if self.adj_mat.shape[0] != self.adj_mat.shape[1]:
+            raise ValueError('Adjacency matrix must be symmetric and square')
+        
+        
+        
+        pq = [] # priority queue
+        mst = []
+        visited = set()
+        start = np.random.randint(self.adj_mat.shape[0])
+        visited.add(start)
+        # add all neighbors of start to pq
+        for i in range(self.adj_mat.shape[0]):
+            if self.adj_mat[start][i] != 0: # if there is an edge
+                heapq.heappush(pq, (self.adj_mat[start][i], start, i)) # tuple of (weight, start, neighbor)
+        
+        while pq:
+            weight, start, neighbor = heapq.heappop(pq) # get the edge with the smallest weight
+            if neighbor not in visited:
+                visited.add(neighbor)
+                mst.append((start, neighbor, weight))
+                for i in range(self.adj_mat.shape[0]): #for all possible neighbors of neighbor
+                    if self.adj_mat[neighbor][i] != 0: # if there is an edge
+                        heapq.heappush(pq, (self.adj_mat[neighbor][i], neighbor, i))
+
+        # create the mst matrix
+        
+        self.mst = np.zeros(self.adj_mat.shape)
+        for start, neighbor, weight in mst:
+            self.mst[start][neighbor] = weight
+            self.mst[neighbor][start] = weight # symmetric
+
